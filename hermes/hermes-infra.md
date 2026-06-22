@@ -8,41 +8,46 @@ tags: [hermes, infra, multi-tenant]
 - v0.16.0 (upstream 56236b16)
 - Streaming + typing indicator для Telegram
 
-## Архитектурное решение (16.06.2026)
-- **Demo-тенант → вариант В:** кастомный скрипт-бот (86 строк, DeepSeek API), без Hermes
-- **Продакшен (Morearbot):** остаётся как есть — полноценный Hermes-гейтвей
-- **Причина:** 90% лидам нужен только чат + /upgrade, незачем тащить MCP, терминал, 30 команд
-- **Выгода:** минус один гейтвей → экономия RAM (~45MB vs ~200MB), нет polling-конфликтов при рестарте
+## Архитектурное решение (22.06.2026)
+- **Demo-тенант → @Apolaibot:** кастомный скрипт-бот (621 строка, 62MB RAM, DeepSeek API)
+- **Продакшен (Morearbot):** полноценный Hermes-гейтвей (~200MB)
+- **Причина:** 90% лидам нужен только чат + /upgrade, незачем тащить MCP, терминал
 
-### Цепочка ботов (16.06.2026)
+### Цепочка ботов
 ```
-Пользователь → @Apolaibot (demo, 45MB) → /upgrade
-                                            → @miropolbot (оплата Stars, 10MB)
+Пользователь → @Apolaibot (demo, 62MB) → 10 команд
+                                            → /upgrade → @miropolbot (оплата Stars, 10MB)
                                             → авто-онбординг (stars-activator, cron 2min)
                                             → @Morearbot (полный Hermes, 200MB)
 ```
 
 | Бот | Тип | RAM | Функция |
 |-----|-----|-----|---------|
-| @Apolaibot | Скрипт (python-telegram-bot) | ~45MB | Демо: чат + /upgrade |
-| @miropolbot | Скрипт (polling) | ~10MB | Оплата Telegram Stars |
-| @Morearbot | Hermes Gateway | ~200MB | Полный доступ (Pro) |
+| @Apolaibot | Скрипт (python-telegram-bot) | 62MB | Демо: каталог, онбординг, 2FA, summarize, export, temp, tools, feedback |
+| @miropolbot | Скрипт (polling) | 10MB | Оплата Telegram Stars |
+| @Morearbot | Hermes Gateway | 200MB | Полный доступ (Pro) |
 
-**Скрипты:**
-- `~/.local/bin/apolaibot-demo.py` — demo-бот, 86 строк
-- `~/.hermes/scripts/stars-payment-handler.py` — приём платежей
-- `~/.hermes/scripts/stars-activator.py` — авто-онбординг (вызывает `hermes-tenant onboard`)
-- `~/.config/systemd/user/apolaibot-demo.service` — systemd-юнит
-- `~/.config/systemd/user/stars-payment.service` — systemd-юнит
-- `~/.hermes/profiles/demo/` — профиль demo-бота (.env, config.yaml)
+## Новые скрипты (22.06.2026)
 
-**Cron:** `stars-pro-activator` (каждые 2 мин, no_agent) — проверяет БД платежей → `hermes-tenant onboard` → рестарт gateway
+| Скрипт | Фаза | Назначение |
+|--------|------|-----------|
+| `agent_fs.py` | 1 | Агентская ФС: версионирование, локинг, audit trail |
+| `skill_sandbox.py` | 1 | Podman-песочница для кода |
+| `billing.py` | 2 | 4 тарифа, организации, промокоды |
+| `tenant_features.py` | 2 | Каталог, фидбек, бюджет для тенантов |
+| `user_skills.py` | 3 | Пользовательские скиллы |
+| `team_vault.py` | 3 | Командный vault + BM25-поиск |
+| `doc_export.py` | 3 | MD→PDF/DOCX/XLSX |
+| `agent_queue.py` | 4 | Очередь агентов FIFO |
+| `cloud_mirror.py` | 4 | Облачное зеркало папки |
+| `health_dashboard.py` | 5 | Мониторинг сервисов |
+| `whitelabel.py` | 5 | Брендинг тенантов |
 
 ## Multi-tenant
 - ОДИН агент, ОДИН бот, ОДИН процесс (продакшен)
 - Роутинг: channel_prompts + channel_profiles в config.yaml
 - Профили в ~/.hermes/profiles/<name>/
-- Общие скиллы: /opt/hermes/shared-skills/
+- Изоляция: 5 слоёв (терминал, статика, код, рантайм, аудит)
 
 ## Патч gateway/run.py (06.06.2026)
 - profile-specific disabled_toolsets
@@ -59,3 +64,6 @@ tags: [hermes, infra, multi-tenant]
 ## Профили
 - default (Поляков) — полный доступ
 - user_470549555 (Илья) — disabled: delegation, code_execution
+- user_5529208670 (Cryptos)
+- user_308591502, user_2115597720, user_1148002325
+- poliakarm, apolai, demo, morearbot
