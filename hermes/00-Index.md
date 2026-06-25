@@ -24,12 +24,14 @@ created: 2026-06-09
 - [[freecodecamp]] — freeCodeCamp: 6000+ бесплатных туториалов (веб, ML, кибербез)
 - [[datalab-lift]] — Datalab Lift: 9B open-weights модель extraction из PDF/изображений (90.2% vs Gemini 91.3%, 3× быстрее, 2026-06-20)
 - [[awesome-generative-ai-apps]] — 50+ опенсорс AI-приложений (Vercel, Stripe, Google OAuth) — готовые SaaS-продукты для монетизации
+- [[public-apis-github-2026-06-23]] — Public APIs: 1400+ бесплатных API на GitHub (300K ⭐, MIT)
 
 ## Заметки
 
-- [[memory]] — техническая память (окружение, конфиги, уроки)
+- [[memory-architecture]] — Архитектура памяти: 4 слоя, инструменты, гайд для тиражирования (23.06.2026, проверено)
 - [[user-profile]] — профиль пользователя (Поляков Алексей)
 - [[trading]] — трейдинг Bybit, bybit-ws, стратегии
+- [[trading/ltc-fundamental-analysis]] — LTC фундаментал: майнинг, халвинг, Scrypt-экосистема (23.06.2026)
 - [[../bybit-ws/00-Overview|bybit-ws Overview]] — карта документации трейдинг-движка
 - [[../bybit-ws/Code-Review-Manus-AI|Код-ревью Manus AI]] — результаты аудита
 - [[vpn]] — VPN-инфраструктура (VLESS, WireGuard, бот)
@@ -44,6 +46,8 @@ created: 2026-06-09
 - [[competitors/iskra]] — анализ конкурента Искра: 18 фич
 - [[orchestration-master]] — **полная архитектура оркестрации** (22.06.2026): 14 разделов, все скрипты, кроны, изоляция, биллинг
 - [[roadmap-orchestration]] — роадмап оркестрации (16.06.2026)
+- [[hermes-maturity-levels]] — 15 уровней зрелости Hermes Agent + Sensei Loop (23.06.2026)
+- [[automation-blueprints]] — Automation Blueprints: шаблоны cron-автоматизаций (фича Hermes, 23.06.2026)
 
 ## Проекты
 

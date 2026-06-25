@@ -1,65 +1,76 @@
 ---
 tags: [hermes, memory]
-updated: 2026-06-19
+updated: 2026-06-24
 ---
 
 # Техническая память
 
-## Проекты (актуальное состояние)
+## Конфиг Hermes (24.06.2026)
+- `approvals.mode: auto` — больше никаких pending_approval
+- `max_concurrent_sessions: 3` — защита от Broken pipe на DeepSeek
+- `cron.max_parallel_jobs: 3` — параллельные cron'ы не душат API
+- ⚠️ Рестарт gateway обязателен для применения! `hermes gateway restart`
+
+## Проекты
 
 ### bybit-ws
-- Фаза 3 завершена: backtest, ML scorer, partial TP, funding rotation, trailing_sl_x10
-- Сервис: `bybit-ws-async` (НЕ `bybit-ws.service` — вырублен)
-- Тесты: 45/45 PASS
+- Сервис: `bybit-ws-async`
 - Дашборд v5.0 (порт 9999)
-- AGENTS.md в репо (`~/bybit-ws/AGENTS.md`) — навигация для AI
+- AGENTS.md: `~/bybit-ws/AGENTS.md`
+- **RPC /move_sl (24.06.2026):** добавлен endpoint для передвижения SL без credential scanner
+- SUI SL: $0.6307 → $0.58
+
+### PCI Bot (24.06.2026)
+- **Остановлен и отключён.** Был бесконечный restart loop (65K раз, нет токена)
+- Сервис: system-level `/etc/systemd/system/pci-bot.service`
+- Проект: `~/pci-index/` — крипто-индекс, не используется
 
 ### Multi-tenant Hermes
-- 7 профилей: default (Море), demo, user_1148002325, user_2115597720 (Колесников), user_308591502, user_470549555 (Илья), user_5529208670
-- Cron для тенантов: ✳️ папок cron/ у тенантов нет — работают в рамках gateway с disabled_toolsets
-- Gateway: active since Jun 17
+- **11 профилей:** poliakarm (админ), user_5529208670 (Cryptos), user_470549555 (Илья), user_308591502 (Марина), user_2115597720 (Колесников), user_1148002325 (Илларионов), user_696238708 (D.V.), apolai, demo, morearbot, default
+- **Реестр:** см. `hermes/audit-orchestration-2026-06-22.md`
+- **Изоляция:** Linux users (uid 1002-1007), iptables 3 правила, channel_profiles + channel_prompts в config.yaml
+- Gateway: рестарт изнутри заблокирован → только cron или снаружи
+- Cron: 61 джоба (28 no_agent), доставка в супергруппу `-1004317245467` по топикам 4-7
+- Age-шифрование .env: все 11 профилей
+
+### @Apolaibot
+- 11 пользователей, 9 активных сегодня
+- Фичи: 👍👎 оценки, /temp инкогнито, /export (md/pdf/docx), /summarize, /tools, /skills, /upgrade, веб-поиск (Tavily)
+- Стриминг: включён глобально (streaming: true)
+- Голосовые: whisper через системный python (sys.path fallback)
+- Сервис: apolaibot-demo, systemctl --user
 
 ### VPN
-- Xray: скорее всего через другой механизм (не systemd user unit)
-- VPN-бот: masked (выключен намеренно)
+- @Poliakarbot VLESS+WG, 2.27.48.142:443
+- systemd --user, cron silent-when-clean
 
 ### Промышленная тема
-- Претензия по линейке: составлена, сохранена в `акты-бнгкм/`
-- Кейсбук «ИИ в ТЭК»: сохранён в Obsidian
 - Тезисы-2026: в работе
+- Акт ВИК от 17.06.2026: скважина №6314 БНГКМ, 137 труб НКТ
 
 ## LLM & Инструменты
-- DeepSeek V4 Pro (deepseek-v4-pro) для всех вызовов
-- Judge: прямой вызов DeepSeek API, max_tokens=2000, timeout=30с
-- FreeLLMAPI: ~/freellmapi, port 3001, systemd
-- TTS: всегда русский, голос Дмитрий (ru-RU-DmitryNeural)
+- DeepSeek V4 Pro для всех вызовов
+- Judge: прямой вызов DeepSeek API
+- FreeLLMAPI: ~/freellmapi, port 3001
+- TTS: русский, голос Дмитрий (ru-RU-DmitryNeural)
+- Vision: custom:freellmapi → gemini-2.5-flash (у всех тенантов)
 
 ## Сервер
-- Хельсинки, Финляндия (2.27.48.142)
-- SSH: порт 2091, пользователь openclaw, password auth ✅
-- 1.9GB RAM, своп 2GB — критично экономить память
-- Все systemd-сервисы — user-level
+- 2.27.48.142, Хельсинки
+- SSH: порт 2091, openclaw
+- Диск: 44/63G (73%), RAM: 1.6/3.8G
+- Все сервисы — systemd user-level
 
-## Веб-интерфейсы Hermes
-- **Dashboard:** `http://127.0.0.1:9119` (сервис hermes-dashboard, enabled, автостарт)
-  - Скиллы, конфиг, API-ключи, сессии, статус компонентов
-  - Доступ снаружи: `ssh -L 9119:127.0.0.1:9119 -p 2091 openclaw@2.27.48.142`
-- **Command Center (свой):** `http://2.27.48.142:9998/chat.html` (чат) и `/dashboard.html` (устарел)
-  - Сервис hermes-chat, порт 9998, слушает 0.0.0.0
-- **Веб-чат (fallback):** `http://2.27.48.142:9999/chat.html` (bybit-ws дашборд)
-
-## Отправка файлов
-- MEDIA:/path в тексте ответа — доставляет в текущий чат
-- send_message — только когда явно сказано «отправь в канал X»
-
-## Правила пользователя
+## Правила
 - Не слать approved-запросы — исполнять без подтверждений
-- GitHub push только через cron github-weekly-push (пн 10:00), не вручную
-- **memory() Hermes ОТКЛЮЧЕНА НАВСЕГДА** — только Obsidian vault через write_file/patch
+- GitHub push через cron (пн 10:00)
+- **memory() Hermes ОТКЛЮЧЕНА** — только Obsidian vault
+- Рестарт gateway только извне (cron no_agent)
 
-## Онбординг новых клиентов — ОБЯЗАТЕЛЬНАЯ ПРОВЕРКА
-После `hermes-tenant onboard` всегда проверять:
-1. `TELEGRAM_ALLOWED_USERS` в `.env` — добавить новый tg_id
-2. `channel_profiles` в `config.yaml` — маппинг tg_id → профиль
-3. `channel_prompts` в `config.yaml` — системный промпт
-4. После правок — `systemctl --user restart hermes-gateway`
+## Онбординг — чекап
+1. TELEGRAM_ALLOWED_USERS в .env
+2. channel_profiles + channel_prompts в config.yaml
+3. hermes-tenant onboard (Linux user + iptables)
+4. skill-sync для base + opt-in скиллов
+5. Age-шифрование .env
+6. Рестарт gateway (cron no_agent)
