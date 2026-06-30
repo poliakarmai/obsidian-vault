@@ -1,5 +1,5 @@
 # GSC Active Patterns
-Generated: 2026-06-25 06:20
+Generated: 2026-06-25 09:34
 Total: 23 patterns
 
 | Project | Cat | Ech | Pattern | Type | TP/FP |

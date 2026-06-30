@@ -48,6 +48,7 @@ created: 2026-06-09
 - [[roadmap-orchestration]] — роадмап оркестрации (16.06.2026)
 - [[hermes-maturity-levels]] — 15 уровней зрелости Hermes Agent + Sensei Loop (23.06.2026)
 - [[automation-blueprints]] — Automation Blueprints: шаблоны cron-автоматизаций (фича Hermes, 23.06.2026)
+- [[hermes-bug-hunting]] — проект «БАГИ»: охота за багами в Hermes Agent → PR'ы (26.06.2026)
 
 ## Проекты
 

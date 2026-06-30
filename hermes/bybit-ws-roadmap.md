@@ -1,65 +1,71 @@
 ---
-tags: [bybit-ws, roadmap, trading, monitor]
-created: 2026-06-16
-updated: 2026-06-23
-version: "2.0"
+tags: [roadmap, bybit-ws]
+updated: 2026-06-30
 ---
 
-# Bybit-ws Monitor — Дорожная карта
+# Roadmap bybit-ws
 
-> Версия монитора: 6.8 | Фаза: 6 (Мульти-биржа)
+## ✅ ФАЗА 7 — ЗАВЕРШЕНА (27.06.2026)
 
----
+| Задача | Статус | Результат |
+|--------|--------|-----------|
+| Graceful shutdown | ✅ v7.0 | `while not SHUTDOWN` + сигналы |
+| apply_journal_insights | ✅ v7.0 → починен | был вызов без аргументов, исправлено в heavy_cycle_opt |
+| Heavy cycle <30с | ✅ | 77s → 29.73s (asyncio.gather, 62% ускорение) |
+| Backtesting framework | ✅ | Monte Carlo 10K + Sharpe + Sortino + Calmar + per-symbol |
+| Kelly sizing | ✅ | f*=(p×b-q)/b, fractional 25%, per-symbol stats |
+| Grafana dashboard | ✅ | 8 панелей: позиции, PnL, циклы, аптайм + 2 графика |
 
-## ✅ Фаза 1-5: Сделано
+## ✅ ФАЗА 7.1 — СТАБИЛИЗАЦИЯ (28.06.2026)
 
-| Фаза | Что | Статус |
-|------|-----|--------|
-| 1 | Базовая стабильность, мониторинг, circuit breaker | ✅ |
-| 2 | SQLite SSOT + RPC + Prometheus /metrics | ✅ |
-| 3 | ML-скоринг (RF F1 0.921), Trailing x10, Partial TP, Фандинг-ротация | ✅ |
-| 4 | ATR risk-sizing, Multi-timeframe (D/W/M), Telegram-алерты, WS, Дашборд v5.0 | ✅ |
-| 5 | RF Gate, LSTM (5 режимов), RL (DQN), Ансамбль, A/B-тест, HMAC-модели | ✅ |
+| Задача | Статус |
+|--------|--------|
+| auto_tp: orders.values() → list/dict | ✅ |
+| ab_status: NoneType check | ✅ |
+| Self-learning в main loop (2880 циклов) | ✅ |
+| pump_state авто-очистка | ✅ |
+| gridsignal-bot: ALTER TABLE crash | ✅ |
+| DSPy → DeepSeek | ✅ |
+| pip-audit: per-package fix_versions | ✅ |
+| PR #52823 (macOS symlink fix) | 🟡 ждёт форк |
 
-## ✅ Фаза 6: Мульти-биржа (текущая)
+## ✅ ФАЗА 7.2 — ЗАВЕРШЕНА (28.06.2026)
 
-| # | Что | Статус |
-|---|-----|--------|
-| 6.1 | Binance Futures REST | ✅ |
-| 6.2 | OKX Futures REST | ✅ |
-| 6.3 | WebSocket real-time (kline+position+execution+wallet) | ✅ |
-| 6.4 | Push-уведомления (ntfy + Telegram fallback) | ✅ |
-| 6.5 | Унифицированный API-слой (Bybit/Binance/OKX) | 🔄 |
-| 6.6 | Кросс-биржевой арбитраж | 🔜 |
-| 6.7 | Глобальный risk-менеджмент (circuit breaker, max_positions, correlation) | ✅ |
-| 6.8 | Dry Spell Throttle (3 холостых → пропуск 30 мин) | ✅ |
-| 6.9 | SHORT SL: +10% + задержка 20 мин | ✅ 23.06 |
+| Задача | Статус |
+|--------|--------|
+| BlackSwan multi-tier (3 уровня: -3%/-5%/-8%) | ✅ |
+| Canary mode для self-learning (10% + auto-rollback) | ✅ |
+| Paper Trading (PaperExchange + RPC) | ✅ |
+| Structured Logging (JSON в events.jsonl) | ✅ |
 
-## 🔜 Фаза 7: SHORT-стратегия (июль 2026)
+## ✅ ФАЗА 7.3 — POST-TRADE + SELF-LEARN (30.06.2026)
 
-| # | Что | Зачем |
-|---|-----|-------|
-| 7.1 | SHORT-сканер отдельный от LONG (не зеркало) | Разная динамика перегрева |
-| 7.2 | SHORT ML Gate (отдельная модель) | LONG-модель не работает для SHORT |
-| 7.3 | JUNK-режим v2: авто-определение пампа | Сейчас ручной порог 80% |
-| 7.4 | SHORT x10 режим | Трейлинг SL для шлака |
-| 7.5 | SHORT бэктестинг на истории | Валидация без риска |
+| Задача | Статус |
+|--------|--------|
+| save_trade_features() hook при импорте истории Bybit | ✅ коммит 06c4482 |
+| post_trade_features.jsonl наполняется реальными данными | ✅ |
+| Кластерный анализ WR<40% → автоблок | ✅ (ждёт данных) |
+| self_learn analyze() missing trades fix | ✅ (исправлено ранее) |
+| Очистка диска (~2.5G) | ✅ |
+| Telegram bridge восстановлен | ✅ |
 
-## 🔮 Идеи (без сроков)
+## ⬜ ФАЗА 8 — ANDROID ПРИЛОЖЕНИЕ
 
-| # | Идея |
-|---|------|
-| 8.1 | Spot-поддержка |
-| 8.2 | Copy-trading для AI-агентов |
-| 8.3 | Интеграция с TradingView |
-| 8.4 | Уведомления в Discord/Slack |
-| 8.5 | Мобильное PWA-приложение |
-| 8.6 | Prometheus/Grafana (продакшен-мониторинг) |
+### MVP (v8.0)
+| Фича | Описание |
+|------|---------|
+| Дашборд | Позиции, PnL, SL/TP — live через RPC :8766 |
+| Алерты | Пуш-уведомления: входы, TP, SL, пампы, circuit breaker |
+| Управление | Закрыть позицию, подвинуть SL, поставить TP |
+| Скан SHORT | Ручной запуск BB-скана из приложения |
+| Мультисервер | Подключение к нескольким VPS |
 
-## 📊 Статистика
+### Что нужно для старта
+- Защищённый API шлюз (RPC снаружи — дыра в безопасности)
+- WebSocket эндпоинт для live-обновлений
+- Push-сервер (Firebase или ntfy)
 
-- **Модулей:** 45+ (.py файлов)
-- **Тестов:** 24 (smoke + module + ML smoke)
-- **RPC endpoints:** 12+
-- **Cron-джобов:** 8 (dashboard, scan LONG, auto-entry, correlation, NL→SQL, extraction, rebuild-graph, backup)
-- **Документация:** AGENTS.md + DESIGN.md + DESIGN-STRATEGIES.md + ROADMAP.md
+### Долгий срок
+- Grafana HTTPS (нужен домен для Let's Encrypt)
+- Multi-exchange (Binance, OKX)
+- DQN → PPO

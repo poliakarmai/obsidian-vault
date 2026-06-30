@@ -1,6 +1,6 @@
 ---
 tags: [trading, bybit]
-updated: 2026-06-24
+updated: 2026-06-27
 ---
 
 # Трейдинг Bybit
@@ -38,10 +38,12 @@ updated: 2026-06-24
 | 4 — Масштабирование | ✅ | ATR risk-sizing, Multi-timeframe (D/W/M), Telegram-алерты, WebSocket, Дашборд v5.0 |
 | 5 — ML | ✅ | RF Gate, LSTM (5 классов режима), RL (DQN), Ансамбль RF+LSTM+RL, A/B-тест, HMAC-подпись моделей |
 | **6 — Мульти-биржа** | 🔄 | Binance Futures, OKX Futures, WebSocket real-time, унифицированный API-слой |
-|| **6.3** — WebSocket full | ✅ | kline + position + execution + wallet + feature flag BYBIT_WS_FULL_ENABLED |
-|| **6.4** — Push-уведомления | ✅ | ntfy (топик bybit-alerts-335c1721), CRITICAL/HIGH, без Telegram-дублей |
-|| **6.7** — Глобальный risk-менеджмент | ✅ | circuit breaker, max_positions, correlation check |
-|| **6.8** — Dry Spell Throttle | ✅ | 3 холостых SHORT-цикла → пропуск 30 мин, экономия ~80% BB-запросов |
+||| **6.3** — WebSocket full | ✅ | kline + position + execution + wallet + feature flag BYBIT_WS_FULL_ENABLED |
+||| **6.4** — Push-уведомления | ✅ | ntfy (топик bybit-alerts-335c1721), CRITICAL/HIGH, без Telegram-дублей |
+||| **6.7** — Глобальный risk-менеджмент | ✅ | circuit breaker, max_positions, correlation check |
+||| **6.8** — Dry Spell Throttle | ✅ | 3 холостых SHORT-цикла → пропуск 30 мин, экономия ~80% BB-запросов |
+| **7 — Оптимизация** | ✅ | Heavy cycle 77s→29.73s, Backtest (Monte Carlo/Sharpe/Sortino/Calmar), Kelly sizing (f* + 25% fractional), apply_journal fix |
+||| **7.1** — Prometheus | ✅ | Конфиг деплойнут, bybit-ws в targets (UP), метрики: `/metrics` → Prometheus → Grafana |
 
 ## Аудит 18.06.2026
 - 23 находки исправлены (7 CRITICAL + 12 HIGH + 4 MEDIUM)
@@ -57,7 +59,7 @@ updated: 2026-06-24
 - `trailing_sl.py` (включая trailing_sl_x10)
 - `ml_scorer.py`, `lstm_regime.py`, `rl_agent.py`, `ensemble.py`
 - `correlation.py`, `position_sizing.py`, `x10_limits.py`
-- `backtest.py`, `partial_tp.py`, `funding_rotation.py`
+- `backtest.py` (Фаза 7), `heavy_cycle_opt.py` (Фаза 7)
 - Дашборд: `web/`, порт 9999
 
 ## Тесты
@@ -83,26 +85,24 @@ updated: 2026-06-24
 - Bybit (bytick.com): торговые права, без Wallet
 - Ключи в `~/.config/bybit-cli/config`
 
-## Текущие позиции (24.06.2026 13:40 MSK)
+## Текущие позиции (27.06.2026 20:00 MSK)
 
 | Монета | Плечо | Вход | Марк | PnL | SL |
 |---|---|---|---|---|---|
-| STG | 10x | $0.2249 | $0.1787 | **-$44.35** | $0.0571 |
-| MOVE | 10x | $0.0131 | $0.0112 | -$38.98 | $0.009 |
-| ADA | 10x | $0.1652 | $0.1464 | -$28.85 | $0.123 |
-| NEAR | 10x | $2.1465 | $1.9388 | -$25.62 | $1.85 |
-| DOGE | 10x | $0.0852 | $0.0781 | -$13.30 | $0.0721 |
-| DOT | 10x | $0.9618 | $0.8968 | -$8.66 | $0.789 |
-| ONDO | 3x | $0.3346 | $0.3028 | -$7.88 | $0.2964 |
-| ACH | 3x | $0.0051 | $0.0047 | -$3.62 | $0.0045 |
-| FLOW | 10x | $0.0284 | $0.0279 | -$0.22 | $0.02 |
-| SUI | 10x | $0.6928 | $0.6956 | **+$0.51** | $0.58 |
-| DASH | 10x | $34.81 | $35.48 | +$1.34 | $29.68 |
-| AVAX | 10x | $6.3487 | $6.3890 | +$1.58 | $5.185 |
+| STG | 10x | $0.2249 | $0.1710 | **-$51.72** | $0.0571 |
+| MOVE | 10x | $0.0131 | $0.0112 | -$38.38 | $0.009 |
+| ADA | 10x | $0.1591 | $0.1482 | -$25.23 | $0.123 |
+| DOT | 10x | $0.9110 | $0.8431 | -$15.84 | $0.789 |
+| FLOW | 10x | $0.0273 | $0.0273 | -$0.15 | $0.02 |
+| DASH | 10x | $34.81 | $34.32 | -$0.98 | $29.68 |
+| DOGE | 10x | $0.0755 | $0.0762 | +$0.80 | $0.075 |
+| AVAX | 10x | $6.3487 | $6.6140 | +$1.64 | $5.185 |
+| AAVE SHORT | 10x | $98.60 | $95.61 | +$2.45 | $98.60 |
+| SUI | 10x | $0.6928 | $0.7107 | +$3.22 | $0.58 |
 
-**Итого: -$168.05** | Маржа: $201/$300 (67%) | Риск: 🟢 OK
+**Итого: -$124.19** | Маржа: $141/$300 (47%) | Риск: 🟢 OK
 
-Изменения за день: SUI SL $0.6307→$0.58 ✅ | RPC /move_sl добавлен
+Изменения: NEAR/ONDO/ACH закрыты. AAVE SHORT открыт. STG продолжает падать.
 
 ## Мониторинг
 - **Watchdog cron `960fdc08de73`**: каждые 5 мин (было 30м), no_agent
