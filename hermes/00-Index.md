@@ -26,7 +26,7 @@ created: 2026-06-09
 - [[awesome-generative-ai-apps]] — 50+ опенсорс AI-приложений (Vercel, Stripe, Google OAuth) — готовые SaaS-продукты для монетизации
 - [[public-apis-github-2026-06-23]] — Public APIs: 1400+ бесплатных API на GitHub (300K ⭐, MIT)
 
-## Заметки
+- [[checkpointing-for-agents]] — Checkpointing для AI-агентов (MiMo crash, 2026-07-01)
 
 - [[memory-architecture]] — Архитектура памяти: 4 слоя, инструменты, гайд для тиражирования (23.06.2026, проверено)
 - [[user-profile]] — профиль пользователя (Поляков Алексей)
