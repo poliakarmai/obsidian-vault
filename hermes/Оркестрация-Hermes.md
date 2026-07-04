@@ -1,6 +1,6 @@
 # Оркестрация Hermes — полная картина
 
-> 22.06.2026 · 5/5 фаз готовы · 15 новых скриптов · продакшен-ready
+> 04.07.2026 · 5/5 фаз + KG/Reflect · 18 скриптов · продакшен-ready
 
 ---
 
@@ -111,11 +111,43 @@
 
 | Tier | Кол-во | Кому |
 |---|---|---|
-| **base** | 54 | Всем тенантам |
+| **base** | 55 | Всем тенантам |
 | **admin_only** | 53 | Только Море |
 | **opt_in** | 25 | По запросу |
-| **Новые (22.06)** | 5 | agent-fs, skill-sandbox, billing, user-skills, skill-sandbox |
-| **Всего** | ~183 | — |
+| **Новые (04.07)** | 1 | knowledge-graph-reflect |
+| **Всего** | ~184 | — |
+
+---
+
+## 🧠 Knowledge Graph + Reflect (04.07.2026)
+
+Две фичи памяти для всех тенантов:
+
+### Knowledge Graph (`kg.py`)
+- Граф `[[wikilinks]]` из Obsidian vault → SQLite
+- Basename-резолвинг: `[[trading]]` → `hermes/trading.md`
+- Инкрементальный (по mtime), `--full` для перестройки
+- Запросы: `query`, `backlinks`, `path`, `orphans`, `search`, `stats`
+- У каждого тенанта своя БД (`~/.hermes/kg-<tenant>.db`)
+
+### Reflect (`reflect.py`)
+- Автономный ночной цикл: KG → свежие заметки → DeepSeek → инсайты
+- Сохраняет в `hermes/insights/YYYY-MM-DD.md`
+- Категории: паттерны, противоречия, пробелы, действия
+- Верификация сохранения (≥200 байт)
+
+### Multi-tenant оркестратор (`reflect-all.py`)
+- Один скрипт для всех: админ + 9 тенантов
+- Крон `aebfa1645602`, ежедневно 03:00, `no_agent=true`
+
+| Тенант | .md | KG |
+|--------|-----|-----|
+| admin | 252 | `~/.hermes/kg.db` |
+| dv | 40 | `~/.hermes/kg-dv.db` |
+| kolesnikov | 15 | `~/.hermes/kg-kolesnikov.db` |
+| cryptos, drone_dev, illarionov, ilya | 3 | `~/.hermes/kg-*.db` |
+| nikita | 2 | `~/.hermes/kg-nikita.db` |
+| d_fffa, marina | 1 | `~/.hermes/kg-*.db` |
 
 ---
 
@@ -158,6 +190,11 @@
 | 💎 TON активатор | Каждые 2м |
 | 📊 Cost tracking | Каждые 3ч |
 
+### Память (новое 04.07)
+| Джоб | Когда |
+|---|---|
+| 🌙 Reflect All | 03:00 |
+
 ### Газпром
 | Джоб | Когда |
 |---|---|
@@ -184,6 +221,9 @@
 | 🔵 4 | `/tools` | Прозрачность тулов |
 | ⚪ 5 | `health_dashboard.py` | Мониторинг сервисов |
 | ⚪ 5 | `whitelabel.py` | Брендинг тенантов |
+| 🧠 6 | `kg.py` | Knowledge Graph [[wikilinks]] → SQLite |
+| 🧠 6 | `reflect.py` | Ночной цикл осмысления vault |
+| 🧠 6 | `reflect-all.py` | Multi-tenant оркестратор Reflect |
 
 ---
 
@@ -207,3 +247,4 @@
 - [[trading]] — трейдинг и bybit-ws
 - [[memory]] — техническая память
 - [[user-profile]] — профиль пользователя
+- [[hermes/insights/2026-07-04]] — последние инсайты Reflect
