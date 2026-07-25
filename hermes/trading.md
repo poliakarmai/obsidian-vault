@@ -1,6 +1,7 @@
 ---
 tags: [trading, bybit]
-updated: 2026-07-03
+updated: 2026-07-07
+latest_commit: 357c649 (docs: compress AGENTS.md, HumanLayer harness)
 ---
 
 # Трейдинг Bybit
@@ -113,3 +114,4 @@ Vault обновлять после каждого изменения позиц
 - AGENTS.md: `~/bybit-ws/AGENTS.md`
 - ROADMAP: `~/bybit-ws/docs/ROADMAP.md`
 - История: `~/bybit-ws/docs/history.md`
+- [[hermes/ltc-analytics|LTC Аналитика]]

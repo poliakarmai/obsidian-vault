@@ -3,6 +3,9 @@ tags: [hermes, index]
 created: 2026-06-09
 ---
 
+- [[vietnam-guide-bot]] — @Vietlivebot, партнёры, мониторинг
+-
+
 # Hermes Knowledge Base
 
 База знаний агента «Море» — заменяет встроенную memory Hermes. Безлимитно, с Obsidian-поиском.

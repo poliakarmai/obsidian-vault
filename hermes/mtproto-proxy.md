@@ -24,6 +24,7 @@ updated: 2026-07-01
 | Ключ 2 | `f66613855e8b6091d9e514d5af04f4c5` | `tg://proxy?server=2.27.48.142&port=443&secret=ddf66613855e8b6091d9e514d5af04f4c5` |
 | Ключ 3 | `717b731fbb1616d27765ce93ceb8c139` | `tg://proxy?server=2.27.48.142&port=443&secret=dd717b731fbb1616d27765ce93ceb8c139` |
 | Ключ 4 | `f215c2bcead5a286832ce5754006984f` | `tg://proxy?server=2.27.48.142&port=443&secret=ddf215c2bcead5a286832ce5754006984f` |
+| Ключ 5 | `296cc3b98c9dc06241c0af9b46b6c06b` | `tg://proxy?server=2.27.48.142&port=443&secret=dd296cc3b98c9dc06241c0af9b46b6c06b` |
 
 ## Данные
 
