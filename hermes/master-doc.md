@@ -1,6 +1,6 @@
 # HERMES — Мастер-документ оркестрации
 
-> **Версия:** 2026-08-06 v3 (+RBAC +Observability +Quota +Alerts) | **Автор:** Море (admin)
+> **Версия:** 2026-08-06 v4 (+RBAC +Observability +Quota +Alerts +Lifecycle) | **Автор:** Море (admin)
 > **Назначение:** Единый источник правды по всей Hermes-инфраструктуре — кодовая база, скиллы, инстинкты, тенанты, архитектура.
 
 ---
@@ -195,6 +195,7 @@ user (user_*)
 | `billing.py` | Биллинг и расчёт стоимости |
 | `hermes_quota.py` | 📊 Квоты: дневные лимиты токенов/событий/MCP |
 | `hermes_alerts.py` | 🚨 Алерты: доставка аномалий админу + авто-действия |
+| `hermes_tenant_lifecycle.py` | 🔄 Жизненный цикл: active→grace→frozen→deleted |
 | `hermes_gateway_hook.py` | 🔗 Watchdog: RBAC + метрики в реальном времени |
 | `hermes_rbac_guard.py` | 🔒 RBAC-шлагбаум: проверка прав до выполнения tool |
 | `hermes_tenant_metrics.py` | 📊 Метрики тенантов: токены, вызовы, аномалии |
@@ -381,7 +382,33 @@ python3 ~/.hermes/scripts/hermes_alerts.py check --auto    # + авто-дейс
 
 ---
 
-## 14. Онбординг нового тенанта
+## 14. Tenant Lifecycle — жизненный цикл
+
+**Файл:** `~/.hermes/scripts/hermes_tenant_lifecycle.py`
+
+Связывает `billing.py` + `deprovision.py` + `rbac_policy.json` в автомат:
+
+```
+active ──оплата просрочена──▶ grace (3 дня) ──▶ frozen (7 дней) ──▶ deleted (30 дней)
+  ✅ всё работает            ⚠️ без MCP/cron      🧊 chat+pay         ❌ deprovision
+```
+
+**Проверка:**
+```bash
+python3 ~/.hermes/scripts/hermes_tenant_lifecycle.py check
+python3 ~/.hermes/scripts/hermes_tenant_lifecycle.py apply    # применить переходы
+```
+
+**Автоматические действия при transition:**
+- grace → RBAC: user-права, убраны MCP/cron/файлы
+- frozen → RBAC: chat+pay only
+- deleted → вызов deprovision.py
+
+Рекомендуемый cron: `0 2 * * *` (раз в сутки)
+
+---
+
+## 15. Онбординг нового тенанта
 
 ```bash
 # Полный онбординг (user + профиль + скиллы + права)
@@ -396,7 +423,7 @@ ls ~/.hermes/profiles/<имя>/
 
 ---
 
-## 15. Конвенции
+## 16. Конвенции
 
 - **Язык:** русский. Код/команды/API — английский.
 - **Стиль:** дружелюбный, краткий, с иронией. Как с коллегой за кофе.
