@@ -1,6 +1,6 @@
 # HERMES — Мастер-документ оркестрации
 
-> **Версия:** 2026-08-06 v4 (+RBAC +Observability +Quota +Alerts +Lifecycle) | **Автор:** Море (admin)
+> **Версия:** 2026-08-06 v5 (+Router +Isolation +Cron +Secrets) (+RBAC +Observability +Quota +Alerts +Lifecycle) | **Автор:** Море (admin)
 > **Назначение:** Единый источник правды по всей Hermes-инфраструктуре — кодовая база, скиллы, инстинкты, тенанты, архитектура.
 
 ---
@@ -54,7 +54,7 @@
 
 | Провайдер | Модель | Назначение |
 |-----------|--------|-----------|
-| deepseek | deepseek-v4-pro | Основная модель (Mоре) |
+| deepseek | deepseek-v5 (+Router +Isolation +Cron +Secrets)-pro | Основная модель (Mоре) |
 | google | gemini-2.5-flash | Vision (изображения) |
 
 ---
@@ -196,6 +196,8 @@ user (user_*)
 | `hermes_quota.py` | 📊 Квоты: дневные лимиты токенов/событий/MCP |
 | `hermes_alerts.py` | 🚨 Алерты: доставка аномалий админу + авто-действия |
 | `hermes_tenant_lifecycle.py` | 🔄 Жизненный цикл: active→grace→frozen→deleted |
+| `hermes_skill_router.py` | 🎯 Динамический роутер: intent → нужные скиллы (экономия токенов) |
+| `hermes_isolation_test.py` | 🛡️ Ночные тесты: RBAC, изоляция, cron, права (30 проверок) |
 | `hermes_gateway_hook.py` | 🔗 Watchdog: RBAC + метрики в реальном времени |
 | `hermes_rbac_guard.py` | 🔒 RBAC-шлагбаум: проверка прав до выполнения tool |
 | `hermes_tenant_metrics.py` | 📊 Метрики тенантов: токены, вызовы, аномалии |
@@ -382,7 +384,7 @@ python3 ~/.hermes/scripts/hermes_alerts.py check --auto    # + авто-дейс
 
 ---
 
-## 14. Tenant Lifecycle — жизненный цикл
+## 15. Tenant Lifecycle — жизненный цикл
 
 **Файл:** `~/.hermes/scripts/hermes_tenant_lifecycle.py`
 
@@ -408,7 +410,48 @@ python3 ~/.hermes/scripts/hermes_tenant_lifecycle.py apply    # применит
 
 ---
 
-## 15. Онбординг нового тенанта
+## 14. Skill Router — динамическая подгрузка
+
+**Файл:** `~/.hermes/scripts/hermes_skill_router.py`
+
+Вместо загрузки 130+ скиллов в контекст — подбирает 3-5 релевантных по intent.
+
+| Компонент | Значение |
+|-----------|---------|
+| Проиндексировано | 327 скиллов, 15 категорий |
+| Обязательные | 6 (всегда) |
+| Дополнительные | до 5 по запросу |
+| Экономия токенов | ~3-5K на сессию |
+
+**Пример:** запрос «позиции bybit» → trading-data-sources, bybit-ws-maintenance.
+Запрос «привет» → только mandatory (без тяжёлых скиллов).
+
+```bash
+python3 ~/.hermes/scripts/hermes_skill_router.py index   # построить индекс
+python3 ~/.hermes/scripts/hermes_skill_router.py route "запрос"
+```
+
+---
+
+## 18. Isolation Tests + Cron + Secrets
+
+**Файл:** `~/.hermes/scripts/hermes_isolation_test.py`
+
+Ночная проверка (30 тестов): RBAC deny/allow, изоляция профилей, cron-лимиты, права файлов.
+
+```bash
+python3 ~/.hermes/scripts/hermes_isolation_test.py
+# exit 0 = всё чисто, exit 1 = нарушения
+```
+
+**Cron-лимиты:** admin=∞, bot=0, user=0, test=1, dev=3.
+**Права:** config.yaml, .env, rbac_policy.json → 600.
+
+Рекомендуемый cron: `0 3 * * *` (раз в сутки)
+
+---
+
+## 16. Онбординг нового тенанта
 
 ```bash
 # Полный онбординг (user + профиль + скиллы + права)
@@ -423,7 +466,7 @@ ls ~/.hermes/profiles/<имя>/
 
 ---
 
-## 16. Конвенции
+## 17. Конвенции
 
 - **Язык:** русский. Код/команды/API — английский.
 - **Стиль:** дружелюбный, краткий, с иронией. Как с коллегой за кофе.
