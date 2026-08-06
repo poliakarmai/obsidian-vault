@@ -193,6 +193,8 @@ user (user_*)
 | `payment-smart-cart.py` | Умная корзина APScheduler |
 | `audit-trail.py` | Аудит-трейл операций |
 | `billing.py` | Биллинг и расчёт стоимости |
+| `hermes_rbac_guard.py` | 🔒 RBAC-шлагбаум: проверка прав до выполнения tool |
+| `hermes_tenant_metrics.py` | 📊 Метрики тенантов: токены, вызовы, аномалии |
 
 ### Shared-скрипты (для всех)
 
