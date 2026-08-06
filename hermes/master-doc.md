@@ -1,6 +1,6 @@
 # HERMES — Мастер-документ оркестрации
 
-> **Версия:** 2026-08-06 | **Автор:** Море (admin)
+> **Версия:** 2026-08-06 v2 (+RBAC +Observability) | **Автор:** Море (admin)
 > **Назначение:** Единый источник правды по всей Hermes-инфраструктуре — кодовая база, скиллы, инстинкты, тенанты, архитектура.
 
 ---
@@ -271,10 +271,74 @@ user (user_*)
 7. **Telegram ≠ markdown.** Таблицы → моноширинный `<pre>`, не raw pipe-строки.
 8. **Один gateway.** Не плодить отдельных гейтвеев для ботов.
 9. **AGENTS.md в каждом проекте.** Новый проект → AGENTS.md в корне.
+10. **RBAC прежде тула.** Hard-проверка прав на уровне кода. Bot не может terminal, user не может cronjob.
+11. **Метрики по тенантам.** Токены, tool calls, MCP, denied — всё в SQLite. Аномалии → алерт.
 
 ---
 
-## 10. Онбординг нового тенанта
+## 10. RBAC — изоляция инструментов
+
+**Политика:** `~/.hermes/rbac_policy.json` (авто-сгенерирована при первом запуске)
+
+Принцип: deny имеет приоритет, нет allow → default deny.
+
+| Роль | Разрешено | Запрещено |
+|------|-----------|-----------|
+| **admin** | `*` (всё) | — |
+| **bot** | chat, answer, pay, upgrade, delegate_task | execute_command, terminal, write_file, read_file, cronjob, mcp:\*, file:\* |
+| **user** | chat, answer, web_search | execute_command, terminal, write_file, read_file, cronjob, delegate_task, mcp:\*, file:\* |
+| **test** | chat, answer, basic_tools | execute_command, write_file, cronjob, mcp:\* |
+| **dev** | chat, basic_tools, code_search, mcp:codebase-memory, mcp:repowise | execute_command, write_file, cronjob, mcp:bybit-ws |
+
+**Проверка:**
+```bash
+python3 ~/.hermes/scripts/hermes_rbac_guard.py check --tenant user_5529208670 --tool execute_command
+# → exit 3 (denied)
+```
+
+**Файлы:**
+- `~/.hermes/scripts/hermes_rbac_guard.py` (249 строк) — RBAC-шлагбаум
+- `~/.hermes/rbac_policy.json` — политика
+- `~/.local/share/hermes/rbac_audit.jsonl` — аудит-лог
+
+---
+
+## 11. Tenant Observability — метрики
+
+**Хранилище:** SQLite `~/.local/share/hermes/tenant_usage.db` (WAL-режим)
+
+**Что измеряется:**
+- Токены (in/out/total) на тенанта
+- Tool calls (allowed + denied)
+- MCP calls
+- Latency (средняя)
+- Ошибки
+
+**CLI:**
+```bash
+# Запись события
+python3 ~/.hermes/scripts/hermes_tenant_metrics.py record --tenant user_X --event llm --tokens-in 1200 --tokens-out 350
+
+# Дневной отчёт
+python3 ~/.hermes/scripts/hermes_tenant_metrics.py report
+
+# Поиск аномалий (токены > 200K, events > 800, denied > 5, MCP > 200)
+python3 ~/.hermes/scripts/hermes_tenant_metrics.py anomalies --json
+```
+
+**Пороги аномалий (по умолчанию):**
+- Токены: 200,000/день
+- События: 800/день
+- Denied: 5/день
+- MCP-вызовы: 200/день
+
+**Файлы:**
+- `~/.hermes/scripts/hermes_tenant_metrics.py` (248 строк)
+- `~/.hermes/scripts/hermes_gateway_hook.py` — watchdog (systemd)
+
+---
+
+## 12. Онбординг нового тенанта
 
 ```bash
 # Полный онбординг (user + профиль + скиллы + права)
@@ -289,7 +353,7 @@ ls ~/.hermes/profiles/<имя>/
 
 ---
 
-## 11. Конвенции
+## 13. Конвенции
 
 - **Язык:** русский. Код/команды/API — английский.
 - **Стиль:** дружелюбный, краткий, с иронией. Как с коллегой за кофе.
