@@ -1,6 +1,6 @@
 # HERMES — Мастер-документ оркестрации
 
-> **Версия:** 2026-08-06 v5 (+Router +Isolation +Cron +Secrets) (+RBAC +Observability +Quota +Alerts +Lifecycle) | **Автор:** Море (admin)
+> **Версия:** 2026-08-06 v6 (+Router +Isolation +Cron +Secrets +FullTenants) (+RBAC +Observability +Quota +Alerts +Lifecycle) | **Автор:** Море (admin)
 > **Назначение:** Единый источник правды по всей Hermes-инфраструктуре — кодовая база, скиллы, инстинкты, тенанты, архитектура.
 
 ---
@@ -54,29 +54,29 @@
 
 | Провайдер | Модель | Назначение |
 |-----------|--------|-----------|
-| deepseek | deepseek-v5 (+Router +Isolation +Cron +Secrets)-pro | Основная модель (Mоре) |
+| deepseek | deepseek-v6 (+Router +Isolation +Cron +Secrets +FullTenants)-pro | Основная модель (Mоре) |
 | google | gemini-2.5-flash | Vision (изображения) |
 
 ---
 
 ## 2. Тенанты — 14 профилей
 
-| Профиль | TG ID | Роль | Скиллов | Память | Cron | Тип |
-|---------|-------|------|:-------:|:------:|:----:|-----|
-| **default** | — | Море (админ) | 80 | ✅ | ✅ | admin |
-| **poliakarm** | — | Поляков (DM) | 159 | — | — | admin |
-| **morearbot** | @Morearbot | Pro-бот (gateway) | 84 | — | — | bot |
-| **apolai** | @Apolaibot | Demo-бот | 84 | — | — | bot |
-| **demo** | — | Тестовый | 83 | — | 1 | test |
-| **vietnam-pro** | @Vietlivebot | Вьетнам Pro | 136 | — | — | bot |
-| **vietnam-guide** | — | Вьетнам dev | 77 | — | — | dev |
-| **user_5529208670** | @Cryptoram | Поляков (второй) | 130 | — | — | user |
-| **user_696238708** | крипто-клиент | 130 | 2 | — | user |
-| **user_1971012634** | клиент | 123 | — | — | user |
-| **user_2115597720** | клиент | 130 | — | — | user |
-| **user_308591502** | клиент | 130 | — | — | user |
-| **user_470549555** | клиент | 130 | — | — | user |
-| **user_7413748866** | клиент | 72 | — | — | user |
+| Профиль | TG ID | Кто | Тариф | Токены | Cron | Тип |
+|---------|:-----:|-----|:-----:|:------:|:----:|-----|
+| **default** | — | Море (система) | — | ∞ | 999 | admin |
+| **poliakarm** | 319665243 | Алексей (основной) | expert | 100M | 999 | admin |
+| **user_5529208670** | 5529208670 | @Cryptoram (второй) | expert | 100M | 5 | admin |
+| **user_696238708** | 696238708 | D.V. (трубы) | pro | 20M | 5 | user |
+| **user_1971012634** | 1971012634 | Никита (сын) | pro | 20M | 5 | user |
+| **user_2115597720** | 2115597720 | Колесников | pro | 20M | 5 | user |
+| **user_308591502** | 308591502 | Марина (жена) | pro | 20M | 5 | user |
+| **user_470549555** | 470549555 | Илья | pro | 20M | 5 | user |
+| **user_7413748866** | 7413748866 | Алхимик (дроны) | pro | 20M | 5 | user |
+| **vietnam-pro** | 8413418064 | @yuga061 (VN dev) | pro | 20M | 0 | bot |
+| **morearbot** | — | @Morearbot | Stars | — | 0 | bot |
+| **apolai** | — | @Apolaibot | Stars | — | 0 | bot |
+| **demo** | — | Тестовый | — | — | 1 | test |
+| **vietnam-guide** | — | Вьетнам dev | — | — | 3 | dev |
 
 ### Права доступа
 
