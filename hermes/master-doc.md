@@ -1,6 +1,6 @@
 # HERMES — Мастер-документ оркестрации
 
-> **Версия:** 2026-08-06 v2 (+RBAC +Observability) | **Автор:** Море (admin)
+> **Версия:** 2026-08-06 v3 (+RBAC +Observability +Quota +Alerts) | **Автор:** Море (admin)
 > **Назначение:** Единый источник правды по всей Hermes-инфраструктуре — кодовая база, скиллы, инстинкты, тенанты, архитектура.
 
 ---
@@ -64,13 +64,13 @@
 | Профиль | TG ID | Роль | Скиллов | Память | Cron | Тип |
 |---------|-------|------|:-------:|:------:|:----:|-----|
 | **default** | — | Море (админ) | 80 | ✅ | ✅ | admin |
-| **poliakarm** | — | Поляков (DM) | 159 | — | — | user |
+| **poliakarm** | — | Поляков (DM) | 159 | — | — | admin |
 | **morearbot** | @Morearbot | Pro-бот (gateway) | 84 | — | — | bot |
 | **apolai** | @Apolaibot | Demo-бот | 84 | — | — | bot |
 | **demo** | — | Тестовый | 83 | — | 1 | test |
 | **vietnam-pro** | @Vietlivebot | Вьетнам Pro | 136 | — | — | bot |
 | **vietnam-guide** | — | Вьетнам dev | 77 | — | — | dev |
-| **user_5529208670** | Poliakarm (личка) | 130 | — | — | user |
+| **user_5529208670** | @Cryptoram | Поляков (второй) | 130 | — | — | user |
 | **user_696238708** | крипто-клиент | 130 | 2 | — | user |
 | **user_1971012634** | клиент | 123 | — | — | user |
 | **user_2115597720** | клиент | 130 | — | — | user |
@@ -193,6 +193,9 @@ user (user_*)
 | `payment-smart-cart.py` | Умная корзина APScheduler |
 | `audit-trail.py` | Аудит-трейл операций |
 | `billing.py` | Биллинг и расчёт стоимости |
+| `hermes_quota.py` | 📊 Квоты: дневные лимиты токенов/событий/MCP |
+| `hermes_alerts.py` | 🚨 Алерты: доставка аномалий админу + авто-действия |
+| `hermes_gateway_hook.py` | 🔗 Watchdog: RBAC + метрики в реальном времени |
 | `hermes_rbac_guard.py` | 🔒 RBAC-шлагбаум: проверка прав до выполнения tool |
 | `hermes_tenant_metrics.py` | 📊 Метрики тенантов: токены, вызовы, аномалии |
 
@@ -338,7 +341,47 @@ python3 ~/.hermes/scripts/hermes_tenant_metrics.py anomalies --json
 
 ---
 
-## 12. Онбординг нового тенанта
+## 12. Quota — дневные лимиты
+
+**Политика:** `~/.hermes/quota_policy.json` (авто-сгенерирована)
+
+| Роль | Токены/день | События/день | MCP/день | Denied | При превышении |
+|------|:-----------:|:------------:|:--------:|:------:|:-------------:|
+| admin | ∞ | ∞ | ∞ | alert>10 | alert |
+| bot | 300K | 1000 | 200 | 5 | freeze |
+| user | 100K | 300 | 0 | 3 | throttle |
+| test | 50K | 100 | 10 | 3 | throttle |
+| dev | 200K | 500 | 100 | 5 | throttle |
+
+**Проверка:**
+```bash
+python3 ~/.hermes/scripts/hermes_quota.py check --tenant user_X --role user --cost-tokens 1200
+# exit: 0=ok, 1=warning, 2=throttle, 3=freeze
+```
+
+---
+
+## 13. Alerts — доставка админу
+
+**Файл:** `~/.hermes/scripts/hermes_alerts.py`
+
+Собирает аномалии из метрик + квот, форматирует в Telegram-сообщение.
+
+```bash
+python3 ~/.hermes/scripts/hermes_alerts.py check           # отчёт
+python3 ~/.hermes/scripts/hermes_alerts.py check --auto    # + авто-действия
+```
+
+**Авто-действия при --auto:**
+- denied burst → throttle
+- token spike > 500K → freeze
+- mcp flood → warning
+
+Рекомендуемый cron: `0 * * * *` (каждый час)
+
+---
+
+## 14. Онбординг нового тенанта
 
 ```bash
 # Полный онбординг (user + профиль + скиллы + права)
@@ -353,7 +396,7 @@ ls ~/.hermes/profiles/<имя>/
 
 ---
 
-## 13. Конвенции
+## 15. Конвенции
 
 - **Язык:** русский. Код/команды/API — английский.
 - **Стиль:** дружелюбный, краткий, с иронией. Как с коллегой за кофе.
