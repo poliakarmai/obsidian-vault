@@ -1,6 +1,6 @@
 ---
 tags: [hermes, memory]
-updated: 2026-06-24
+updated: 2026-08-09
 ---
 
 # Техническая память
@@ -41,7 +41,7 @@ updated: 2026-06-24
 - **Реестр:** см. `hermes/audit-orchestration-2026-06-22.md`
 - **Изоляция:** Linux users (uid 1002-1007), iptables 3 правила, channel_profiles + channel_prompts в config.yaml
 - Gateway: рестарт изнутри заблокирован → только cron или снаружи
-- Cron: 61 джоба (28 no_agent), доставка в супергруппу `-1004317245467` по топикам 4-7
+- Cron: 61 джоба (28 no_agent), доставка в супергруппу `-1004317245467` по топикам 4-7. Сокращено с 69 (09.08.2026): GSC 6→4, Vietnam 5→3, Backups 4→2.
 - Age-шифрование .env: все 11 профилей
 
 ### @Apolaibot
@@ -66,11 +66,15 @@ updated: 2026-06-24
 - TTS: русский, голос Дмитрий (ru-RU-DmitryNeural)
 - Vision: custom:freellmapi → gemini-2.5-flash (у всех тенантов)
 
-## GSC — статус (25.06.2026)
-- **Все проекты закрыты:** GridSignal✅ PCI✅ VPN✅ bybit-ws✅ Apolaibot✅ Hermes-self✅
-- **GSC DB:** `~/.hermes/state/gsc_audit.db` — 5 audit_runs, 100+ findings
-- **Самообучение включено:** после каждого аудита находки сохраняются в DB + Obsidian
-- **Критично:** `gsc_save_findings.py` ОБЯЗАТЕЛЬНО вызывать после delegate_task аудита. Без этого самообучение не работает.
+## GSC — статус (09.08.2026)
+- **Hall of Fame:** 3 реальные находки — aiohttp-security#1005 (CWE-384), django-ca#202 (CWE-918), Baobab#1401 (CWE-798)
+- **Precision-hunt:** 32 активных детектора, 1 disabled (GS000), 6 review-only. Hunter v4 с edu-layer
+- **PyPI:** `pip install gsc-security` — v1.3.0 опубликован. Имя `gsc` было занято.
+- **VS Code:** расширение готово (gsc-security-1.0.0.vsix), ждёт Azure PAT для Marketplace
+- **Самообучение:** batch revalidate 50 находок/ночь + federated submit (DP ε=1.0) — nightly cron в 04:00
+- **Охотник:** cron e6e3dc0016ef, 07:00 MSK, v4 Educational — PR с what/why/when/how
+- **DB:** `~/.hermes/state/gsc_audit.db` — 461K findings, 217 проектов, 237 ревалидировано
+- **Скиллы Hermes:** architectural-audit, antivibe (из AntiVibe)
 
 ## Hermes Config (25.06.2026)
 - **`hermes_config.py`** — единый источник ADMIN_IDS и UNLIMITED_USERS
@@ -88,7 +92,7 @@ updated: 2026-06-24
 ## Правила
 - Не слать approved-запросы — исполнять без подтверждений
 - GitHub push через cron (пн 10:00)
-- **memory() Hermes ОТКЛЮЧЕНА** — только Obsidian vault
+- **memory() Hermes ОТКЛЮЧЕНА 09.08.2026** — только Obsidian vault. `memory_enabled: false`, `user_profile_enabled: false`
 - Рестарт gateway только извне (cron no_agent)
 
 ## Онбординг — чекап
