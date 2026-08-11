@@ -1,71 +1,73 @@
 ---
 tags: [roadmap, bybit-ws]
-updated: 2026-06-30
+updated: 2026-08-08
 ---
 
 # Roadmap bybit-ws
 
-## ✅ ФАЗА 7 — ЗАВЕРШЕНА (27.06.2026)
+> Актуально на 08.08.2026. Синхронизировано с `~/bybit-ws/docs/ROADMAP.md`.
 
-| Задача | Статус | Результат |
-|--------|--------|-----------|
-| Graceful shutdown | ✅ v7.0 | `while not SHUTDOWN` + сигналы |
-| apply_journal_insights | ✅ v7.0 → починен | был вызов без аргументов, исправлено в heavy_cycle_opt |
-| Heavy cycle <30с | ✅ | 77s → 29.73s (asyncio.gather, 62% ускорение) |
-| Backtesting framework | ✅ | Monte Carlo 10K + Sharpe + Sortino + Calmar + per-symbol |
-| Kelly sizing | ✅ | f*=(p×b-q)/b, fractional 25%, per-symbol stats |
-| Grafana dashboard | ✅ | 8 панелей: позиции, PnL, циклы, аптайм + 2 графика |
+## ✅ ФАЗА 1–7 — ЗАВЕРШЕНЫ (07.06 – 28.06.2026)
 
-## ✅ ФАЗА 7.1 — СТАБИЛИЗАЦИЯ (28.06.2026)
+Базовая архитектура, ML-скоринг, LSTM-режимы, RPC, дашборд, алерты, self-learning.
 
-| Задача | Статус |
-|--------|--------|
-| auto_tp: orders.values() → list/dict | ✅ |
-| ab_status: NoneType check | ✅ |
-| Self-learning в main loop (2880 циклов) | ✅ |
-| pump_state авто-очистка | ✅ |
-| gridsignal-bot: ALTER TABLE crash | ✅ |
-| DSPy → DeepSeek | ✅ |
-| pip-audit: per-package fix_versions | ✅ |
-| PR #52823 (macOS symlink fix) | 🟡 ждёт форк |
+## ✅ ФАЗА 8.0–8.2 — ЗАВЕРШЕНЫ (01–04.08.2026)
 
-## ✅ ФАЗА 7.2 — ЗАВЕРШЕНА (28.06.2026)
+| Подфаза | Что сделано |
+|---------|------------|
+| 8.0 | Документация, Paper Trade, веб-дашборд, Graphify-рефакторинг, лицензия AGPL-3.0 |
+| 8.1 | LSTM World Model (33.1%), Anti-ludomania, REGIME_AUTO, адаптивный TP/SL, BlackSwan v2, MTF-дыра, SL floor 2→5% |
+| 8.2 | Systemd hardening (MemoryDenyWriteExecute, HMAC mismatch, TimeoutStopSec), MTF-скидка TRENDING_DOWN |
+
+## ✅ ФАЗА 9 — SHORT-оптимизация (08.08.2026)
 
 | Задача | Статус |
 |--------|--------|
-| BlackSwan multi-tier (3 уровня: -3%/-5%/-8%) | ✅ |
-| Canary mode для self-learning (10% + auto-rollback) | ✅ |
-| Paper Trading (PaperExchange + RPC) | ✅ |
-| Structured Logging (JSON в events.jsonl) | ✅ |
+| Time-based SL: закрытие убыточных SHORT >12ч | ✅ `check_short_time_sl()` в основном цикле |
+| Junk ужесточение: max_loss 15→10%, max_hold 48→24ч | ✅ |
+| Исключение imported-сделок из self-learn | ✅ `WHERE strategy != 'imported'` |
+| Анализ: без STGUSDT SHORT +$146 | ✅ |
+| World Model качество: 22.3% → 33.1% | ✅ 400 эпох, λ=0.01 |
 
-## ✅ ФАЗА 7.3 — POST-TRADE + SELF-LEARN (30.06.2026)
+## ⬜ ФАЗА 10 — ANDROID ПРИЛОЖЕНИЕ
 
-| Задача | Статус |
-|--------|--------|
-| save_trade_features() hook при импорте истории Bybit | ✅ коммит 06c4482 |
-| post_trade_features.jsonl наполняется реальными данными | ✅ |
-| Кластерный анализ WR<40% → автоблок | ✅ (ждёт данных) |
-| self_learn analyze() missing trades fix | ✅ (исправлено ранее) |
-| Очистка диска (~2.5G) | ✅ |
-| Telegram bridge восстановлен | ✅ |
+### Сделано
+| Компонент | Статус |
+|-----------|--------|
+| Код приложения (Kotlin/Compose, 25 файлов, 1277 строк) | ✅ |
+| 5 экранов: Dashboard, Detail, Scan, Alerts, Settings | ✅ |
+| Серверная часть: JWT auth, nginx :4444→:8766, /set-tp, /generate-jwt | ✅ |
+| Спецификация: `docs/android/SPEC.md` | ✅ |
 
-## ⬜ ФАЗА 8 — ANDROID ПРИЛОЖЕНИЕ
+### Осталось
+- Сборка APK (нужен Android SDK + Gradle)
+- Global Kill-Switch из приложения
+- Установка на телефон
 
-### MVP (v8.0)
-| Фича | Описание |
-|------|---------|
-| Дашборд | Позиции, PnL, SL/TP — live через RPC :8766 |
-| Алерты | Пуш-уведомления: входы, TP, SL, пампы, circuit breaker |
-| Управление | Закрыть позицию, подвинуть SL, поставить TP |
-| Скан SHORT | Ручной запуск BB-скана из приложения |
-| Мультисервер | Подключение к нескольким VPS |
+## 📋 ДОЛГИЙ СРОК
 
-### Что нужно для старта
-- Защищённый API шлюз (RPC снаружи — дыра в безопасности)
-- WebSocket эндпоинт для live-обновлений
-- Push-сервер (Firebase или ntfy)
+| Задача | Приоритет |
+|--------|-----------|
+| Multi-exchange (Binance, OKX) | 🟡 |
+| ExchangeAdapter — абстракция бирж | 📋 pre-req |
+| DQN → PPO (RL-агент) | 🟢 |
+| Feature Store / Data Pipeline для RL | 📋 pre-req |
+| Grafana HTTPS (нужен домен) | 🟢 |
 
-### Долгий срок
-- Grafana HTTPS (нужен домен для Let's Encrypt)
-- Multi-exchange (Binance, OKX)
-- DQN → PPO
+## История фаз
+
+| Фаза | Дата |
+|------|------|
+| 1 — Базовая | 07.06.2026 |
+| 2 — SQLite + RPC | 16.06.2026 |
+| 3 — ML-скоринг | 17.06.2026 |
+| 4 — Алерты + Дашборд + MTF | 18.06.2026 |
+| 5 — DSPy + A/B + LSTM + RL | 18.06.2026 |
+| 6 — WebSocket + Risk + Push | 21.06.2026 |
+| 7 — Graceful shutdown + Kelly | 27.06.2026 |
+| 7.1 — Стабилизация | 28.06.2026 |
+| 8.0 — Документация + Paper Trade | 02.08.2026 |
+| 8.1 — World Model + Anti-ludomania | 04.08.2026 |
+| 8.2 — Systemd Hardening | 04.08.2026 |
+| 9 — SHORT-оптимизация | 08.08.2026 |
+| 10 — Android ⬜ | — |

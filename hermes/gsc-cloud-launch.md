@@ -23,7 +23,7 @@
 ## После запуска
 - Создать GitHub App: Settings → Developer settings → GitHub Apps → New
 - Получить Client ID + Client Secret
-- Stripe: создать аккаунт, получить ключи
+- ~~Stripe~~ ❌ НЕ РАБОТАЕТ в России! Платёжки: Telegram Stars + CryptoBot TON (как в Hermes Pro)
 - Домен: купить gsc.dev или gsc-security.com
 - SSL: certbot для домена
 
