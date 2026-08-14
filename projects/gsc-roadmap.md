@@ -1,8 +1,25 @@
 # GSC ROADMAP — что сделано и что предстоит
 
-> **Статус на 06.08.2026** | Ядро: v0.26 production, 29 детекторов | Cloud: спроектирован (S1–S4) | VSCode: v0.32 scaffold
+> **Статус на 14.08.2026** | Ядро: v1.3.0, 38 детекторов (37 plugin + LLM), schema 31 | PoF-корпус: detect 13/13, PoF verified 13/13, FP=0 | Лицензия: Apache 2.0 + Commercial | Юр.трек 0 закрыт (кроме trademark) | Аудит v2 (Manus): P0 trust boundary закрыт 14.08
 
 Сводная дорожная карта по всем трекам: ядро, rollout, SaaS, Enterprise, VSCode, бизнес.
+
+---
+
+## 0. Актуальное состояние (обновлено 14.08.2026)
+
+> Детали последних работ — в репо `~/gsc/docs/`: `AUTONOMOUS_WORK_REPORT.md`, `SECURITY_FIX_REPORT.md`, `LEGAL_AUDIT.md`, `ENTERPRISE_HARDENING.md`. Git SSOT — `~/gsc` (ветка master).
+
+**Ядро (v1.3.0):**
+- 38 детекторов, schema 31, live DB `~/.hermes/state/gsc_audit.db` (patterns≈393).
+- **PoF-корпус** `benchmark/pof_corpus` (13 vuln + 2 clean): detect **13/13** (TP=13, MISLABELED=0, FN=0), полный PoF-цикл **13/13 verified**, FP на clean 0/2. Замер — `measure_pof_full.py`.
+- Detector Finding-контракт: `category=severity`, поля `title/file_path/detail` (НЕ `file=`/`message=`); эталон `make_finding()` (GS005/GS004).
+
+**Юридический (трек 0):** CONTRIBUTING.md+CLA ✅, SPDX 77 файлов → Apache-2.0 ✅, gitleaks (0 реальных секретов) ✅, лицензии зависимостей (нет GPL) ✅, авторство (372 коммита, 1 автор) ✅. Trademark ❌ (нужен юрист).
+
+**Аудит-фиксы (Manus v2, 14.08):** P0 закрыты — C-01 MCP PoF на реальном файле, C-02 composite PK tenant, C-03 auth на все endpoints, C-04 path traversal, S-01 fail-closed key, S-03 docker.sock. P1 — F-01 hardcoded путь, A-02/A-03 packaging/extras, F-06 claims.
+
+**Осталось (требует решения):** S-05/S-06 (GitHub Action pin), S-08 (signup OAuth), A-01/A-04/A-05 (архитектура → трек 0.5 packages split + S1 PostgreSQL), A-06 (feedback poisoning), F-06/F-07 (release manifest). **⚠️ Отозвать старый GitHub OAuth secret** (закоммичен в истории).
 
 ---
 

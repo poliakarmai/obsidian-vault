@@ -63,7 +63,10 @@ updated: 2026-08-11
 
 ### VPN
 - @Poliakarbot VLESS+WG, 2.27.48.142:443
-- systemd --user, cron silent-when-clean
+- Сервис: `vpn-seller-bot.service` (systemctl --user), enabled, active
+- Код: `/opt/vpn-seller-bot/bot.py`, venv: `/opt/vpn-seller-bot/.venv/`
+- ⚠️ При рестарте: проверять зомби `ps aux | grep 'vpn.*bot.py'` — если висит от vpn-bot, убить перед запуском
+- ⚠️ Права: .env (openclaw:vpn-bot 644), data/ (openclaw:vpn-bot 775)
 
 ### Промышленная тема
 - Тезисы-2026: в работе
@@ -77,7 +80,9 @@ updated: 2026-08-11
 - Vision: custom:freellmapi → gemini-2.5-flash (у всех тенантов)
 
 ## GSC — статус (09.08.2026)
-- **Hall of Fame:** 3 реальные находки — aiohttp-security#1005 (CWE-384), django-ca#202 (CWE-918), Baobab#1401 (CWE-798)
+- **Hall of Fame:** 3 реальные находки — cyberbro#212 (XSS, merged), django-ca#202 (SSRF CWE-918), Baobab#1401 (CWE-798). aiohttp-security#1005 (CWE-384) → **FP**: session fixation нереальна для client-side `SimpleCookieStorage` (identity идёт в новый подписанный cookie жертвы, не в cookie атакующего). Переформулирован в defense-in-depth, PR открыт.
+- **Урок (FP-паттерн):** session fixation реальна только для server-side storage (`RedisStorage`/`MemcachedStorage` — session ID не меняется при логине). Для client-side подписанного cookie (`SimpleCookieStorage`/`CookieStorage`) — атака не работает. При проверке CWE-384 сначала определять storage.
+- **Шумодав (13.08):** Echelon 3 semantic-паттерны разделены — 12 code-quality (goroutine leak, .clone(), error boundary, useEffect deps, mutex copy, double-checked locking, resource leak, score range, интервалы бот↔RPC, ML gate) → `noise_tier='quality'` → INFO (не security). Оставлены 5 security: TOCTOU, race check-then-act, rate limiting, signature verification, fcntl/flock. Это источник 0% TP у HIGH/MEDIUM/LOW. Коммит `8c01008`.
 - **Precision-hunt:** 32 активных детектора, 1 disabled (GS000), 6 review-only. Hunter v4 с edu-layer
 - **PyPI:** `pip install gsc-security` — v1.3.0 опубликован. Имя `gsc` было занято.
 - **VS Code:** расширение готово (gsc-security-1.0.0.vsix), ждёт Azure PAT для Marketplace
@@ -86,6 +91,15 @@ updated: 2026-08-11
 - **DB:** `~/.hermes/state/gsc_audit.db` — 461K findings, 217 проектов, 237 ревалидировано
 - **Скиллы Hermes:** architectural-audit, antivibe (из AntiVibe)
 
+## GSC — статус (14.08.2026)
+- **Ядро v1.3.0, 38 детекторов, schema 31.** PoF-корпус `benchmark/pof_corpus` (13 vuln + 2 clean): detect **13/13** (TP=13, MISLABELED=0, FN=0), полный PoF-цикл **13/13 verified**, FP на clean 0/2. Замер — `measure_pof_full.py`.
+- **Detector Finding-контракт (важно!):** `category=severity` (НЕ `'injection'`/`'redirect'`), поля `title/file_path/detail` (НЕ `file=`/`message=`); эталон `make_finding()` (GS005/GS004); новые детекторы только через `make_finding()`.
+- **Лицензия:** Apache 2.0 + Commercial dual (сменена с BSL 1.1), контакт `armyanao@gmail.com`. SPDX 77 файлов → Apache-2.0.
+- **Юр.трек 0 закрыт:** CONTRIBUTING.md+CLA, gitleaks (0 реальных секретов), лицензии зависимостей (нет GPL), авторство (372 коммита, 1 автор). Trademark ❌ (юрист).
+- **Аудит v2 (Manus, commit c448664 → фиксы до 4511501):** P0 trust boundary закрыт 14.08 — C-01 MCP PoF на реальном файле, C-02 composite PK `(tenant_id, finding_key)`, C-03 auth на все endpoints, C-04 path traversal `scan_id`, S-01 fail-closed key, S-03 docker.sock. P1 — F-01 `~/gsc` hardcoded, A-02/A-03 packaging/extras, F-06 claims (PT Application Inspector).
+- **Осталось:** S-05/S-06 (GitHub Action pin по SHA), S-08 (signup OAuth), A-01/A-04/A-05 (архитектура → packages split + PostgreSQL), A-06 (feedback poisoning), F-06/F-07 (release manifest). **⚠️ Отозвать старый GitHub OAuth secret** (закоммичен в docker-compose истории).
+- **Отчёты в репо:** `~/gsc/docs/AUTONOMOUS_WORK_REPORT.md`, `SECURITY_FIX_REPORT.md`, `LEGAL_AUDIT.md`, `ENTERPRISE_HARDENING.md`. Git push — только по явному запросу.
+
 ## Hermes Config (25.06.2026)
 - **`hermes_config.py`** — единый источник ADMIN_IDS и UNLIMITED_USERS
 - Путь: `~/projects/hermes-agent-orchestration/hermes_config.py`
@@ -93,16 +107,17 @@ updated: 2026-08-11
 - Импортируется в: apolaibot-demo.py, stars-activator.py, deprovision.py, deepseek-balance-monitor.py, tenant-rate-watch.py, audit-log-parser.py
 - ⚠️ При добавлении нового админа — менять `HERMES_ADMIN_IDS` в .env, не в коде.
 
-## Сервер
+## Сервер (12.08.2026)
 - 2.27.48.142, Хельсинки
 - SSH: порт 2091, openclaw
-- Диск: 44/63G (73%), RAM: 1.6/3.8G
-- Все сервисы — systemd user-level
+- Диск: 43/63G (72%), RAM: 670M free / 1.5G available, Swap: 2.0/4G
+- Все сервисы — systemd user-level, 20 running, 0 failed
+- Gateway: 856M RAM (норма для активной сессии)
 
 ## Правила
 - Не слать approved-запросы — исполнять без подтверждений
 - GitHub push через cron (пн 10:00)
-- **memory() Hermes ОТКЛЮЧЕНА 09.08.2026** — только Obsidian vault. `memory_enabled: false`, `user_profile_enabled: false`
+- **memory() Hermes ВКЛЮЧЕНА 12.08.2026** — два слоя: встроенная memory (стартовые правила в `~/.hermes/memories/MEMORY.md`) + Obsidian vault (детали). `memory_enabled: true`, `user_profile_enabled: true`
 - Рестарт gateway только извне (cron no_agent)
 
 ## Онбординг — чекап
@@ -147,3 +162,28 @@ GEMINI_API_KEY: есть в ~/.hermes/.env:461. Vision = Gemini. Не терят
 
 ### Возможности агента
 - DeepSeek V4 Pro через API пишет эротические рассказы — проверено, работает.
+
+## 2026-08-12
+
+- Пользователь Poliakarm активно работает с отчетами GSC (Google Search Console) и запрашивает статус-отчеты по загрузкам.
+- Проводил анализ монетизации VPN-бота (интерес к монетизации ботов).
+- Проверял состояние системы и работоспособность прокси для LLM (инфраструктура для LLM).
+
+### GSC Calibration CI — ПОЧИНЕНА (13/13 PASS)
+- Была красная 8 дней подряд (5-12.08). Причины (4 слоя):
+  1. `calibration_dataset.json` — локальные `/tmp` пути вместо git-URL → clone падал
+  2. `gsc_calibration.py` — не проверял returncode clone/scan
+  3. GS011/GS019 — не видели Flask `app.config['SECRET_KEY'] = '...'`
+  4. Confidence: `PLACEHOLDER_PATTERNS` ловил подстроки, `detect_signals()` матчил слова из LLM-reasoning → confidence 0.95→0.08
+- Доп. CI-причины: `GSC = ~/gsc/gsc.py` hardcoded (в CI путь не существует); БД `gsc_audit.db` не инициализируется с нуля (`findings`/`patterns`/`audit_runs` создаются только в server.py/cloud); `DEEPSEEK_API_KEY` секрета не было в GitHub.
+- Коммиты: 71cf9b3, 812cec9, 076d474, e345654. Скилл `gsc-calibration-debugging` создан.
+- **DEEPSEEK_API_KEY секрет добавлен в GitHub** (35 симв).
+
+### Трейдинг (вечер 12.08) ⚠️
+- bybit-ws alive (uptime 4.2 дня), 10 LONG позиций
+- **Risk CB BLOCKED**: daily_loss -$167 (лимит $50), total_margin $421 (лимит $300)
+- Худшие: STXUSDT -$95, RENDERUSDT -$27. Убыток растёт с утра (-$108 → -$167).
+
+### Память тенантов (12.08)
+- Тенанты: память изолирована через `memory_path` (`profiles/<tenant>/memories/`). Глобальный `memory_enabled` — один флаг на всех, per-profile override нет.
+- Только D.V. (user_696238708) имеет заполненную память (от 22.06.2026), остальные пустые.
