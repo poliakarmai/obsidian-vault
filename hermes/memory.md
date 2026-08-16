@@ -15,6 +15,7 @@ updated: 2026-08-11
 - `max_concurrent_sessions: 3` — защита от Broken pipe на DeepSeek
 - `cron.max_parallel_jobs: 3` — параллельные cron'ы не душат API
 - ⚠️ Рестарт gateway обязателен для применения! `hermes gateway restart`
+- (16.08.2026) `compression.threshold: 0.2`, `target_ratio: 0.15` — deepseek-v4-pro в registry = **1M** токенов, старый threshold 0.5 давал компакцию только на 500K → контекст gateway-треда рос до 327K, DeepSeek умирал на стриме уже с ~283K (stream stale 600s). 0.2 → компакция на ~200K.
 
 ## Доступы
 
@@ -97,7 +98,9 @@ updated: 2026-08-11
 - **Лицензия:** Apache 2.0 + Commercial dual (сменена с BSL 1.1), контакт `armyanao@gmail.com`. SPDX 77 файлов → Apache-2.0.
 - **Юр.трек 0 закрыт:** CONTRIBUTING.md+CLA, gitleaks (0 реальных секретов), лицензии зависимостей (нет GPL), авторство (372 коммита, 1 автор). Trademark ❌ (юрист).
 - **Аудит v2 (Manus, commit c448664 → фиксы до 4511501):** P0 trust boundary закрыт 14.08 — C-01 MCP PoF на реальном файле, C-02 composite PK `(tenant_id, finding_key)`, C-03 auth на все endpoints, C-04 path traversal `scan_id`, S-01 fail-closed key, S-03 docker.sock. P1 — F-01 `~/gsc` hardcoded, A-02/A-03 packaging/extras, F-06 claims (PT Application Inspector).
-- **Осталось:** S-05/S-06 (GitHub Action pin по SHA), S-08 (signup OAuth), A-01/A-04/A-05 (архитектура → packages split + PostgreSQL), A-06 (feedback poisoning), F-06/F-07 (release manifest). **⚠️ Отозвать старый GitHub OAuth secret** (закоммичен в docker-compose истории).
+- **Осталось:** S-05/S-06 (GitHub Action pin по SHA), S-08 (signup OAuth), A-01/A-04/A-05 (архитектура → packages split + PostgreSQL), A-06 (feedback poisoning), F-06/F-07 (release manifest).
+- **Due-diligence (независимый AppSec, 14.08, commit 4511501) → P0 закрыт:** GSC-001 legacy API tenant isolation (loopback-enforced `_enforce_loopback` + single-tenant contract, `GSC_LEGACY_ALLOW_REMOTE=1` opt-in); GSC-002 PoF sandbox → docker/podman контейнер (`--network none --read-only --cap-drop ALL --user 65534` + rlimit fallback + `isolation` label в SandboxResult; образ `gsc-sandbox:latest` = python:3.12-slim+bash+curl, собран podman build + save/load в docker); GSC-003 verified семантика (`_ready_for_pr` требует tests/dast — rescan-only не даёт PR; `dast_skipped`/`deep_verify_error` audit-visible).
+- **Due-diligence P1/P2 закрыты 14.08:** GSC-004 dashboard auth (`get_tenant_from_key`) + tenant-scoped findings; GSC-005 полный test gate (`scripts/run_test_suite.py` = pytest + 24 custom-runner, CI job в gsc-internal-pr.yml; fix test_federated temp-DB + test_cloud_s2 integration-skip) — найден реальный баг: federated_global_weights содержит rule_id=category (HIGH/INFO/LOW/MEDIUM); GSC-006 claims 37 (gsc_meta SSOT, no +1; README/pyproject/index.html/server 36→37); GSC-007 docker-compose fail-closed (`:?` вместо devpassword/dev-secret/dev_app_pw); GSC-008 server.py `/data`→`~/.gsc` writable default; GSC-009 pin SHA всех actions (checkout/setup-python/upload-artifact/github-script/gsc@v1.3.0); GSC-010 `docs/SCHEMA_CONTRACT.md` (category↔severity, file_path↔file drift + план унификации). Полный gate: ALL PASSED.
 - **Отчёты в репо:** `~/gsc/docs/AUTONOMOUS_WORK_REPORT.md`, `SECURITY_FIX_REPORT.md`, `LEGAL_AUDIT.md`, `ENTERPRISE_HARDENING.md`. Git push — только по явному запросу.
 
 ## Hermes Config (25.06.2026)
